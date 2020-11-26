@@ -1,0 +1,5 @@
+{
+    "deno.enable": true,
+    "deno.import_intellisense_autodiscovery": true,
+    "deno.lint": true
+}

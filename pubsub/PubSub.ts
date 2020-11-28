@@ -1,71 +1,89 @@
-import {WebSocketClient} from "../deps.ts"
-import {PubSubConstructor, topic} from "../definitions/pubsub/topics.ts"
-import {PubSubMessage, PubSubMessageType} from "../definitions/pubsub/PubSubMessage.ts"
-import EventEmitter from "https://deno.land/std@0.65.0/node/events.ts"
+import { ChatModeratorAction } from "../definitions/pubsub/ChatModeratorAction.ts"
+import { ChatModeratorActionData } from "../definitions/pubsub/ChatModeratorActionData.ts"
+import { Message } from "../definitions/pubsub/Message.ts"
+import { MessageType } from "../definitions/pubsub/MessageType.ts"
+import { MessageTypes } from "../definitions/pubsub/MessageTypes.ts"
+import { ResponseType } from "../definitions/pubsub/ResponseType.ts"
+import { Topics } from "../definitions/pubsub/Topics.ts"
+import { EventEmitter, WebSocketClient } from "../deps.ts"
 
-export class PubSub extends EventEmitter {
-    readonly wwsEndpoint: string = "wss://pubsub-edge.twitch.tv"
+export class PubSub {
+    private readonly wssTraget: string = "wss://pubsub-edge.twitch.tv"
     private socket: WebSocketClient
-    private oAuthToken: string
-    private topics: topic[]
-    private user_id?: number
-    private channel_id?: number
+    event: EventEmitter
 
-    /**
-     * Create a connection to the PubSub Endpoint and listen to events
-     * 
-     * @param {PubSubConstructor} PubSubConstructor 
-     */
-    constructor(params: PubSubConstructor) {
-        super()
-        this.oAuthToken = params.oAuthToken
-        this.topics = params.topics
-        this.user_id = params.user_id
-        this.channel_id = params.channel_id
-        this.socket = new WebSocketClient(this.wwsEndpoint)
-
-        this.socket.on("open", () => this.wsOnOpenHandler())
-        this.socket.on("message",(message: string) => this.wsOnMessageHandler(message))
-        this.socket.on("error", (error: string) => this.emit("error", error))
+    constructor() { 
+        this.event = new EventEmitter()
+        this.socket = new WebSocketClient(this.wssTraget)
+        this.socket.on("open", () => this.wsOnConnectionHandler() )
+        this.socket.on("error", (error: string) => this.wsOnErrorHandler(error))
+        this.socket.on("message", (message: string) => this.wsGlobalOnMessageHandler(message))
+        this.socket.on("close", () => this.wsOnCloseHandler())
     }
 
-    private wsOnOpenHandler() {
-        let topicsArray: Array<string> = new Array()
-        this.topics.forEach((element) => {
-            switch (element) {
-                case topic.chat_moderator_actions:
-                    topicsArray.push(`chat_moderator_actions.${this.user_id}.${this.channel_id}`)
-                    break;
-                default:
-                    break;
+    subscribeChatModerationActions(oAuthToken: string, userId: string, channelId: string) {
+        this.socket.send(`{
+            "type": "LISTEN",
+            "data": {
+                "topics": ["chat_moderator_actions.${userId}.${channelId}"],
+                "auth_token": "${oAuthToken}"
             }
+        }`)
+    }
 
-            this.socket.send(`{
-                "type": "LISTEN",
-                "data": {
-                    "topics": ["chat_moderator_actions.${this.user_id}.${this.channel_id}"],
-                    "auth_token": "${this.oAuthToken}"
+    private wsGlobalOnMessageHandler(message: string) {
+        const msg: Message = JSON.parse(message)
+        let typedMessage
+        switch (msg.type) {
+            case MessageTypes.PING:
+                this.socket.send('{"type": "PONG"}')
+                break
+            case MessageTypes.RECONNECT:
+                this.socket.close()
+                this.socket = new WebSocketClient(this.wssTraget)
+                this.event.emit("reconnected")
+                break
+            case MessageTypes.RESPONSE:
+                typedMessage = <ResponseType>msg
+
+                if (typedMessage.error !== "") {
+                    this.wsOnErrorHandler(typedMessage.error)
                 }
-            }`)
-
-            this.emit("connected")
-        })
-    }
-
-    private wsOnMessageHandler(message: string){
-        const msg: PubSubMessage = JSON.parse(message)
-        
-        if (msg.type === PubSubMessageType.PING) {
-            this.socket.send('{"type": "PONG"}')
-        } else if (msg.type === PubSubMessageType.RECONNECT) {
-            this.socket.close()
-            this.socket = new WebSocketClient(this.wwsEndpoint)
-        } else if (msg.type === PubSubMessageType.RESPONSE) {
-            if (msg.data !== undefined && msg.data.error !== '') {
-                this.emit("error", "There was some error.")
-            }
-        } else {
-            this.emit("message", msg)
+                break
+            case MessageTypes.MESSAGE:
+                typedMessage = <MessageType>msg
+                this.messageHandler(typedMessage)
+            break
         }
     }
+
+    private messageHandler(message: MessageType) {
+        const splittedType: string = message.data.topic.split(".")[0]
+        //deno-lint-ignore prefer-const
+        let typedTopic
+        //deno-lint-ignore prefer-const
+        let typedData
+        switch (splittedType) {
+            //deno-lint-ignore no-case-declarations
+            case Topics.CHAT_MODERATOR_ACTIONS:
+                typedTopic = <string>message.data.topic
+                typedData = <ChatModeratorActionData>JSON.parse(message.data.message)
+                const data: ChatModeratorAction = {topic: typedTopic, message: typedData} 
+                this.event.emit(Topics.CHAT_MODERATOR_ACTIONS, data)
+                break
+        }
+    }
+
+    private wsOnConnectionHandler() {
+        this.event.emit("connected")
+    }
+
+    private wsOnErrorHandler(error: string) {
+        this.event.emit("error", error)
+    }
+
+    private wsOnCloseHandler() {
+        this.event.emit("closed")
+    }
+
 }

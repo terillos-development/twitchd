@@ -1,21 +1,23 @@
-import { topic } from "../../definitions/pubsub/topics.ts"
-import {PubSub} from "../../mod.ts"
-import {dotEnvLoad} from "../../deps.ts"
-import { PubSubMessage } from "../../definitions/pubsub/PubSubMessage.ts"
+import { PubSub } from "../../mod.ts"
+import { dotEnvLoad } from "../../deps.ts"
+import { Topics } from "../../definitions/pubsub/Topics.ts"
+import { ChatModeratorAction } from "../../definitions/pubsub/ChatModeratorAction.ts"
 
 dotEnvLoad({
     dotEnvPath: '/home/richard/Desktop/workspace/twitchd/.env'
 })
 
-const ws = new PubSub({
-    oAuthToken: Deno.env.get("O_AUTH_TOKEN") || "",
-    topics: [topic.chat_moderator_actions],
-    channel_id: parseInt(Deno.env.get("CHANNEL_ID") || ""),
-    user_id: parseInt(Deno.env.get("USER_ID") || "")
+    const oAuthToken = Deno.env.get("O_AUTH_TOKEN") || ""
+    const channelId = Deno.env.get("CHANNEL_ID") || ""
+    const userId = Deno.env.get("USER_ID") || ""
+
+const chatModerator = new PubSub()
+chatModerator.event.on("connected", () => {
+    console.log("Connected")
+    chatModerator.subscribeChatModerationActions(oAuthToken, userId, channelId)
 })
 
-ws.on("connected", () => console.log("connected"))
-ws.on("error", (error: string) => console.log(error))
-ws.on("message", (message: PubSubMessage) => {
-    console.log('There is a new Message', message.data?.message)
+chatModerator.event.on(Topics.CHAT_MODERATOR_ACTIONS, (action: ChatModeratorAction) => {
+    console.log('Oh no. something is happened: ', action)
 })
+chatModerator.event.on("error", function (error: string) { console.log(error) })

@@ -12,13 +12,13 @@ dotEnvLoad({
     const userId = Deno.env.get("USER_ID") || ""
 
 const chatModerator = new PubSub()
-chatModerator.event.on("connected", () => {
+chatModerator.on("connected", () => {
     console.log("Connected")
     chatModerator.subscribeChatModerationActions(oAuthToken, userId, channelId)
 })
 
-chatModerator.event.on(Topics.CHAT_MODERATOR_ACTIONS, (action: ChatModeratorAction) => {
+chatModerator.on(Topics.CHAT_MODERATOR_ACTIONS, (action: ChatModeratorAction) => {
     console.log('Oh no. something is happened: ', action)
 })
-chatModerator.event.on("error", function (error: string) { console.log(error) })
-chatModerator.event.on("pong", () => console.log('PONG received'))
+chatModerator.on("error", (error: string) => console.log(error))
+chatModerator.on("pong", () => console.log('PONG received'))

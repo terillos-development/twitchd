@@ -21,3 +21,4 @@ chatModerator.event.on(Topics.CHAT_MODERATOR_ACTIONS, (action: ChatModeratorActi
     console.log('Oh no. something is happened: ', action)
 })
 chatModerator.event.on("error", function (error: string) { console.log(error) })
+chatModerator.event.on("pong", () => console.log('PONG received'))

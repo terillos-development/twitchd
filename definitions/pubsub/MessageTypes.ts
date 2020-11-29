@@ -1,5 +1,5 @@
 export enum MessageTypes {
-    PING = "PING",
+    PONG = "PONG",
     RECONNECT = "RECONNECT",
     RESPONSE = "RESPONSE",
     MESSAGE = "MESSAGE",

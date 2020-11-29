@@ -19,6 +19,9 @@ export class PubSub {
         this.socket.on("error", (error: string) => this.wsOnErrorHandler(error))
         this.socket.on("message", (message: string) => this.wsGlobalOnMessageHandler(message))
         this.socket.on("close", () => this.wsOnCloseHandler())
+
+        // Send every 4 Minutes a Ping to the WS to keep the connection alive.
+        setInterval(() => this.wsSendPing(), 1000 * 60 * 4)
     }
 
     subscribeChatModerationActions(oAuthToken: string, userId: string, channelId: string) {
@@ -35,8 +38,8 @@ export class PubSub {
         const msg: Message = JSON.parse(message)
         let typedMessage
         switch (msg.type) {
-            case MessageTypes.PING:
-                this.socket.send('{"type": "PONG"}')
+            case MessageTypes.PONG:
+                this.event.emit("pong")
                 break
             case MessageTypes.RECONNECT:
                 this.socket.close()
@@ -84,6 +87,10 @@ export class PubSub {
 
     private wsOnCloseHandler() {
         this.event.emit("closed")
+    }
+
+    private wsSendPing() {
+        this.socket.send('{ "type": "PING" }')
     }
 
 }

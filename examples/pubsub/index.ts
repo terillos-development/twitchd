@@ -1,10 +1,10 @@
 import { PubSub } from "../../mod.ts"
-import { dotEnvLoad } from "../../deps.ts"
+import { dotEnvLoad } from "../../deps_example.ts"
 import { Topics } from "../../definitions/pubsub/Topics.ts"
 import { ChatModeratorAction } from "../../definitions/pubsub/ChatModeratorAction.ts"
 
 dotEnvLoad({
-    dotEnvPath: '/home/richard/Desktop/workspace/twitchd/.env'
+    dotEnvPath: './../../.env'
 })
 
     const oAuthToken = Deno.env.get("O_AUTH_TOKEN") || ""

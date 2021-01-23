@@ -1,0 +1,1 @@
+export {load as dotEnvLoad} from "https://deno.land/x/tiny_env@1.0.0/mod.ts"

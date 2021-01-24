@@ -11,7 +11,7 @@ import { EventEmitter, WebSocketClient } from "../deps.ts"
  * Declares a PubSub.
  */
 export class PubSub extends EventEmitter {
-    private readonly wssTraget: string = "wss://pubsub-edge.twitch.tv"
+    private readonly wssTarget: string = "wss://pubsub-edge.twitch.tv"
     private socket: WebSocketClient
 
     /**
@@ -19,9 +19,9 @@ export class PubSub extends EventEmitter {
      * Create connection to the WebSocket Endpoint for PubSub and register some handlers.
      * Also creating an interval timer for keeping the connection alive.
      */
-    constructor() { 
+    constructor() {
         super()
-        this.socket = new WebSocketClient(this.wssTraget)
+        this.socket = new WebSocketClient(this.wssTarget)
         this.socket.on("open", () => this.wsOnConnectionHandler() )
         this.socket.on("error", (error: string) => this.wsOnErrorHandler(error))
         this.socket.on("message", (message: string) => this.wsGlobalOnMessageHandler(message))
@@ -32,8 +32,8 @@ export class PubSub extends EventEmitter {
     }
 
     /**
-     * Subscribe to chat_moderation_actions of a specific channel read by a specific user 
-     * 
+     * Subscribe to chat_moderation_actions of a specific channel read by a specific user
+     *
      * @param {string} oAuthToken oAuth Token for the given user.
      * @param {string} userId ID of the user which is used to read the actions
      * @param {string} channelId ID of the channel which should be subscribed to.
@@ -50,8 +50,8 @@ export class PubSub extends EventEmitter {
 
     /**
      * This function handles the different responses of the PubSub API and emits the according events.
-     * 
-     * @param {string} message 
+     *
+     * @param {string} message
      * @fires PubSub#pong
      */
     private wsGlobalOnMessageHandler(message: string): void {
@@ -63,7 +63,7 @@ export class PubSub extends EventEmitter {
                 break
             case MessageTypes.RECONNECT:
                 this.socket.close()
-                this.socket = new WebSocketClient(this.wssTraget)
+                this.socket = new WebSocketClient(this.wssTarget)
                 this.emit("reconnected")
                 break
             case MessageTypes.RESPONSE:
@@ -82,7 +82,7 @@ export class PubSub extends EventEmitter {
 
     /**
      * This function handles if the message from the WebSocket is an actual message which has to be passed to the user.
-     * @param {MessageType} message 
+     * @param {MessageType} message
      */
     private messageHandler(message: MessageType): void {
         const splittedType: string = message.data.topic.split(".")[0]
@@ -95,7 +95,7 @@ export class PubSub extends EventEmitter {
             case Topics.CHAT_MODERATOR_ACTIONS:
                 typedTopic = <string>message.data.topic
                 typedData = <ChatModeratorActionData>JSON.parse(message.data.message)
-                const data: ChatModeratorAction = {topic: typedTopic, message: typedData} 
+                const data: ChatModeratorAction = {topic: typedTopic, message: typedData}
                 this.emit(Topics.CHAT_MODERATOR_ACTIONS, data)
                 break
         }
@@ -110,7 +110,7 @@ export class PubSub extends EventEmitter {
 
     /**
      * This function fires an event if an error happened.
-     * @param {string} error 
+     * @param {string} error
      */
     private wsOnErrorHandler(error: string) {
         this.emit("error", error)

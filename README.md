@@ -9,7 +9,7 @@ This is a **pre-release version**. Don't use it for a big project. It can occur 
 
 ### Docs
 
-See the [Docs](pubsub)
+See the [Docs](docs)
 
 ### Report a bug :bug:
 Open an [Issue](https://github.com/terillos-development/twitchd/issues).

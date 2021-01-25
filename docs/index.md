@@ -4,7 +4,7 @@ With this documentation you should be able to create your application with twitc
 
 ## Docs for Modules
 
-- [PubSub Docs](pubsub)
+- [PubSub Docs](pubsub/index.md)
 
 ## Useful resources
 

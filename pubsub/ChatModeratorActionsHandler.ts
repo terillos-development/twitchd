@@ -7,7 +7,6 @@ export class ChatModeratorActionsHandler {
   static format(message: MessageType): ChatModeratorActionData {
     const data: ChatModeratorActionMessageData = JSON.parse(message.data.message)
     const channelId: string = message.data.topic.split('.')[2]
-    console.log(data.data)
 
     let returnData: ChatModeratorActionData = {
       channel_id: channelId,

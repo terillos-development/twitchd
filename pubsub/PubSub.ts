@@ -20,6 +20,7 @@ export class PubSub extends EventEmitter {
      * Create connection to the WebSocket Endpoint for PubSub and register some handlers.
      * Also creating an interval timer for keeping the connection alive.
      */
+    constructor() {
         super()
         this.socket = new WebSocket(this.wssTarget)
         this.socket.onopen = () => this.wsOnConnectionHandler()

@@ -5,14 +5,14 @@ import { MessageType } from "../definitions/pubsub/MessageType.ts"
 import { MessageTypes } from "../definitions/pubsub/MessageTypes.ts"
 import { ResponseType } from "../definitions/pubsub/ResponseType.ts"
 import { Topics } from "../definitions/pubsub/Topics.ts"
-import { EventEmitter, WebSocketClient } from "../deps.ts"
+import { EventEmitter } from "../deps.ts"
 
 /**
  * Declares a PubSub.
  */
 export class PubSub extends EventEmitter {
     private readonly wssTarget: string = "wss://pubsub-edge.twitch.tv"
-    private socket: WebSocketClient
+    private socket: WebSocket
 
     /**
      * @constructor
@@ -21,11 +21,11 @@ export class PubSub extends EventEmitter {
      */
     constructor() {
         super()
-        this.socket = new WebSocketClient(this.wssTarget)
-        this.socket.on("open", () => this.wsOnConnectionHandler() )
-        this.socket.on("error", (error: string) => this.wsOnErrorHandler(error))
-        this.socket.on("message", (message: string) => this.wsGlobalOnMessageHandler(message))
-        this.socket.on("close", () => this.wsOnCloseHandler())
+        this.socket = new WebSocket(this.wssTarget)
+        this.socket.onopen = () => this.wsOnConnectionHandler()
+        this.socket.onerror = (error: Event) => this.wsOnErrorHandler(error)
+        this.socket.onmessage = (message: MessageEvent) => this.wsGlobalOnMessageHandler(message)
+        this.socket.onclose = () => this.wsOnCloseHandler()
 
         // Send every 4 Minutes a Ping to the WS to keep the connection alive.
         setInterval(() => this.wsSendPing(), 1000 * 60 * 4)
@@ -54,8 +54,8 @@ export class PubSub extends EventEmitter {
      * @param {string} message
      * @fires PubSub#pong
      */
-    private wsGlobalOnMessageHandler(message: string): void {
-        const msg: Message = JSON.parse(message)
+    private wsGlobalOnMessageHandler(message: MessageEvent): void {
+        const msg: Message = JSON.parse(message.data)
         let typedMessage
         switch (msg.type) {
             case MessageTypes.PONG:
@@ -63,7 +63,7 @@ export class PubSub extends EventEmitter {
                 break
             case MessageTypes.RECONNECT:
                 this.socket.close()
-                this.socket = new WebSocketClient(this.wssTarget)
+                this.socket = new WebSocket(this.wssTarget)
                 this.emit("reconnected")
                 break
             case MessageTypes.RESPONSE:
@@ -112,7 +112,7 @@ export class PubSub extends EventEmitter {
      * This function fires an event if an error happened.
      * @param {string} error
      */
-    private wsOnErrorHandler(error: string) {
+    private wsOnErrorHandler(error: Event | string) {
         this.emit("error", error)
     }
 

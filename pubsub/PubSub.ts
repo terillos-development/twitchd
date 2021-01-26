@@ -1,4 +1,3 @@
-import { ChatModeratorAction } from "../definitions/pubsub/ChatModeratorAction.ts"
 import { ChatModeratorActionData } from "../definitions/pubsub/ChatModeratorActionData.ts"
 import { Message } from "../definitions/pubsub/Message.ts"
 import { MessageType } from "../definitions/pubsub/MessageType.ts"
@@ -6,6 +5,7 @@ import { MessageTypes } from "../definitions/pubsub/MessageTypes.ts"
 import { ResponseType } from "../definitions/pubsub/ResponseType.ts"
 import { Topics } from "../definitions/pubsub/Topics.ts"
 import { EventEmitter } from "../deps.ts"
+import { ChatModeratorActionsHandler } from './ChatModeratorActionsHandler.ts'
 
 /**
  * Declares a PubSub.
@@ -93,9 +93,7 @@ export class PubSub extends EventEmitter {
         switch (splittedType) {
             //deno-lint-ignore no-case-declarations
             case Topics.CHAT_MODERATOR_ACTIONS:
-                typedTopic = <string>message.data.topic
-                typedData = <ChatModeratorActionData>JSON.parse(message.data.message)
-                const data: ChatModeratorAction = {topic: typedTopic, message: typedData}
+                const data: ChatModeratorActionData = ChatModeratorActionsHandler.format(message)
                 this.emit(Topics.CHAT_MODERATOR_ACTIONS, data)
                 break
         }

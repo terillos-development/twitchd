@@ -13,11 +13,8 @@ const userId = Deno.env.get("USER_ID") || ""
 const chatModerator = new PubSub()
 chatModerator.on("connected", () => {
     console.log("Connected")
-})
-
-setTimeout(() => {
     chatModerator.subscribeChatModerationActions(oAuthToken, userId, channelId)
-}, 1000)
+})
 
 chatModerator.on(Topics.CHAT_MODERATOR_ACTIONS, (action: ChatModeratorAction) => {
     console.log('Oh no. something is happened: ', action)

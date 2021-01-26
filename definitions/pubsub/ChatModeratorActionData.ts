@@ -1,14 +1,10 @@
+import {ChatModeratorActionTypes} from "./ChatModeratorActionTypes.ts";
+
 export interface ChatModeratorActionData {
-    type: string
-  data: {
-    type: string
-    moderation_action: string
-    args: string[]
-    created_by: string
-    created_by_user_id: string
-    msg_id: string
-    target_user_id: string
-    target_user_login: string
-    from_automod: boolean
-  }
+  type: ChatModeratorActionTypes | undefined,
+  channel_id: string,
+  from_id: string,
+  target_id: string,
+  timeout_time?: number,
+  reason?: string,
 }

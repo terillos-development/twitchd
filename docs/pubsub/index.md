@@ -37,17 +37,11 @@ Get all Moderation-Events from a specific channel.
 
 ```
 {
-    topic: chat_moderator_actions.<user ID>.<channel ID>,
-    data: {
-        type: same as topic
-        moderation_action: type of action (ban, mute etc.)
-        args: command with arguments
-        created_by: name of the user who has issued the action
-        created_by_user_id: id of the user who has issued the action
-        msg_id: id of the message
-        target_user_id: id of the user who has been punished
-        target_user_login: name of the user who has been punished
-        from_automod: defines if it has been an automatic action from twitch
-    }
+    channel_id: Id of the Channel where the events happened,
+    from_id: Id of the user who has dispached the event,
+    target_id: Id of the user who has targeted the event,
+    type: type of action (ban/unban/timeout/untimeout/mod/unmod),
+    timeout_time: time in seconds of the timeout (only visible on type timeout),
+    reason: String of the reason (only on types ban and timeout if supplied)
 }
 ```

@@ -1,3 +1,4 @@
+import { ChatModeratorAction } from "../definitions/pubsub/ChatModeratorAction.ts"
 import { ChatModeratorActionData } from "../definitions/pubsub/ChatModeratorActionData.ts"
 import { Message } from "../definitions/pubsub/Message.ts"
 import { MessageType } from "../definitions/pubsub/MessageType.ts"
@@ -19,7 +20,6 @@ export class PubSub extends EventEmitter {
      * Create connection to the WebSocket Endpoint for PubSub and register some handlers.
      * Also creating an interval timer for keeping the connection alive.
      */
-    constructor() {
         super()
         this.socket = new WebSocket(this.wssTarget)
         this.socket.onopen = () => this.wsOnConnectionHandler()

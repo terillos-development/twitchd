@@ -8,7 +8,6 @@ Currently only the chat_moderations_actions of the PubSub API is implementent.
 This is a **pre-release version**. Don't use it for a big project. It can occur that breaking changes are introduced on the 1.0 release.
 
 ### Docs
-
 See the [Docs](docs/index.md)
 
 ### Report a bug :bug:

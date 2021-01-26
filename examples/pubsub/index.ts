@@ -1,4 +1,5 @@
 import { PubSub } from "../../mod.ts"
+
 import { load } from "../../deps_example.ts"
 import { Topics } from "../../definitions/pubsub/Topics.ts"
 import { ChatModeratorAction } from "../../definitions/pubsub/ChatModeratorAction.ts"
@@ -20,4 +21,5 @@ chatModerator.on(Topics.CHAT_MODERATOR_ACTIONS, (action: ChatModeratorAction) =>
     console.log('Oh no. something is happened: ', action)
 })
 chatModerator.on("error", (error: string) => console.log(error))
+
 chatModerator.on("pong", () => console.log('PONG received'))
